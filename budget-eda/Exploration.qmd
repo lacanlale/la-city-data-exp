@@ -1,0 +1,64 @@
+---
+title: "Exploration"
+format: html
+---
+
+```{r libraries_and_data}
+library(tidyverse)
+library(lubridate)
+
+budget_data <- read_csv("../data/Open_Budget_-_Appropriations_Fiscal_Years_2010_-_2025_20250616.csv")
+```
+
+```{r column_selection}
+budget_data <-
+  budget_data |>
+  select(
+    'Department_Name',
+    'SubDepartment_Name',
+    'Program_Name',
+    'Program_Priority',
+    'Source_Fund_Name',
+    'Account_Name',
+    'Appropriation',
+    'Fiscal_Year',
+    'Expense_Type'
+  )
+
+summary(budget_data)
+```
+
+```{r raw_preview}
+head(budget_data)
+
+map(budget_data, ~str_c(unique(.x),collapse = ",")) |>
+  bind_rows() |>
+  gather(key = column, value = unique_values)
+```
+
+```{r sub_datasets}
+dept_breakdown <- 
+  budget_data |>
+  group_by(Fiscal_Year, Department_Name) |>
+  summarise(total = sum(Appropriation))
+
+sub_dept_breakdown <- 
+  budget_data |>
+  group_by(Fiscal_Year, Department_Name, SubDepartment_Name) |>
+  summarise(total = sum(Appropriation))
+
+program_breakdown <- 
+  budget_data |>
+  group_by(Fiscal_Year, Program_Name) |>
+  summarise(total = sum(Appropriation))
+
+source_fund_breakdown <- 
+  budget_data |>
+  group_by(Fiscal_Year, Source_Fund_Name) |>
+  summarise(total = sum(Appropriation))
+
+account_name_breakdown <- 
+  budget_data |>
+  group_by(Fiscal_Year, Account_Name) |>
+  summarise(total = sum(Appropriation))
+```
