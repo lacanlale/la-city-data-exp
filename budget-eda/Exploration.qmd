@@ -1,11 +1,14 @@
 ---
 title: "Exploration"
-format: html
+format:
+  html:
+    fig-height: 3
 ---
 
 ```{r libraries_and_data}
 library(tidyverse)
 library(lubridate)
+library(scales)
 
 budget_data <- read_csv("../data/Open_Budget_-_Appropriations_Fiscal_Years_2010_-_2025_20250616.csv")
 ```
@@ -13,6 +16,8 @@ budget_data <- read_csv("../data/Open_Budget_-_Appropriations_Fiscal_Years_2010_
 ```{r column_selection}
 budget_data <-
   budget_data |>
+  filter(Fiscal_Year >= 2015) |>
+  mutate (Fiscal_Year = as.integer(Fiscal_Year))|>
   select(
     'Department_Name',
     'SubDepartment_Name',
@@ -25,18 +30,18 @@ budget_data <-
     'Expense_Type'
   )
 
-summary(budget_data)
-```
-
-```{r raw_preview}
-head(budget_data)
-
-map(budget_data, ~str_c(unique(.x),collapse = ",")) |>
-  bind_rows() |>
-  gather(key = column, value = unique_values)
+# head(budget_data)
+# 
+# map(budget_data, ~str_c(unique(.x),collapse = ",")) |>
+#   bind_rows() |>
+#   gather(key = column, value = unique_values)
+# 
+# summary(budget_data)
 ```
 
 ```{r sub_datasets}
+x_axis_labels = seq(2015, 2025,by=1)
+
 dept_breakdown <- 
   budget_data |>
   group_by(Fiscal_Year, Department_Name) |>
@@ -61,4 +66,61 @@ account_name_breakdown <-
   budget_data |>
   group_by(Fiscal_Year, Account_Name) |>
   summarise(total = sum(Appropriation))
+```
+
+# Increases per Year by Department
+
+## Percent Comparisons
+
+## Nominal vs Real Comparisons
+
+### Steepest increasese and decreases (filtered by top and bottom 10)
+
+# Salaries and Overtime Expenditures
+
+# Top 3 Stand out Fiscal Years
+
+# COVID-19 and the impact of quarantine on following years
+
+```{r}
+dept_breakdown |>
+  ggplot(
+    aes(
+      x=Fiscal_Year, 
+      y=total,
+      color=Department_Name
+    )
+  ) +
+  geom_line() +
+  scale_y_continuous(labels=dollar_format()) + 
+  scale_x_continuous(breaks=seq(2015, 2025,by=1)) +
+  theme(legend.position="none")
+```
+
+```{r}
+program_breakdown |>
+  ggplot(
+    aes(
+      x=Fiscal_Year, 
+      y=total,
+      color=Program_Name
+    )
+  ) +
+  geom_line() +
+  theme(legend.position="none")
+```
+
+```{r}
+source_fund_breakdown |>
+  ggplot(
+    aes(
+      x=Fiscal_Year, 
+      y=total,
+      color=Source_Fund_Name
+    )
+  ) +
+  geom_line() +
+  scale_y_continuous(labels=dollar_format()) + 
+  scale_x_continuous(breaks=seq(2015, 2025,by=1)) +
+  theme(legend.position="none")
 ```
